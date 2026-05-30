@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MARKET LIST</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #d1d5db;
+        }
+
+        .industrial {
+            background: #111111;
+            border: 2px solid #444444;
+            box-shadow: 0 0 0 1px #222222 inset;
+        }
+
+        .header {
+            border-bottom: 3px solid #555555;
+        }
+
+        table {
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #444444;
+        }
+
+        tr:hover {
+            background: #1a1a1a;
+        }
+
+        input,
+        select {
+            background: #1a1a1a;
+            border: 1px solid #555555;
+            color: #e5e7eb;
+        }
+
+        .stat-card {
+            background: #1a1a1a;
+            border: 2px solid #444;
+        }
+
+        .nav-btn.active {
+            border-color: #d1d5db !important;
+            color: #f3f4f6;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen pb-12">
+    <div class="max-w-7xl mx-auto p-6">
+        <!-- Header -->
+        <div class="header industrial rounded-none p-6 mb-8 flex items-center justify-between">
+            <div>
+                <h1 class="text-4xl tracking-widest font-bold">MARKET LIST</h1>
+                <p class="text-xs text-gray-500 mt-1"> JORGE PROTOCOL • v1.4</p>
+            </div>
+            <button onclick="exportarReporte()"
+                class="industrial px-6 py-3 text-sm hover:bg-gray-800 flex items-center gap-2 border border-gray-600 hover:border-gray-400">
+                <i class="fas fa-share-alt"></i> COMPARTIR
+            </button>
+        </div>
+MARKET LIST
+        <div class="grid grid-cols-12 gap-6">
+            <!-- Menú -->
+            <div class="col-span-12 md:col-span-3">
+                <div class="industrial p-5 space-y-1">
+                    <button onclick="mostrarSeccion(1)"
+                        class="nav-btn w-full text-left px-4 py-3 hover:bg-gray-800 flex items-center gap-3 border-l-4 border-transparent active">
+                        <i class="fas fa-box"></i> PRODUCTOS
+                    </button>
+                    <button onclick="mostrarSeccion(2)"
+                        class="nav-btn w-full text-left px-4 py-3 hover:bg-gray-800 flex items-center gap-3 border-l-4 border-transparent">
+                        <i class="fas fa-exchange-alt"></i> OPERACIONES
+                    </button>
+                    <button onclick="mostrarSeccion(3)"
+                        class="nav-btn w-full text-left px-4 py-3 hover:bg-gray-800 flex items-center gap-3 border-l-4 border-transparent">
+                        <i class="fas fa-eye"></i> REVISIÓN
+                    </button>
+                </div>
+            </div>
+
+            <!-- Contenido -->
+            <div class="col-span-12 md:col-span-9 space-y-8">
+
+                <!-- SECCIÓN PRODUCTOS -->
+                <div id="seccion1">
+                    <h2 class="text-2xl mb-4">GESTIÓN DE PRODUCTOS</h2>
+                    <div class="industrial p-6 grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div><label class="block text-xs text-gray-400 mb-1">NOMBRE DEL PRODUCTO</label><input
+                                id="nombre" type="text" class="w-full p-3"></div>
+                        <div><label class="block text-xs text-gray-400 mb-1">PRECIO ($)</label><input id="precio"
+                                type="number" step="0.01" class="w-full p-3"></div>
+                        <div><label class="block text-xs text-gray-400 mb-1">CATEGORÍA</label><input id="categoria"
+                                type="text" class="w-full p-3"></div>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="agregarProducto()"
+                            class="px-8 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-500">AGREGAR /
+                            ACTUALIZAR</button>
+                        <button onclick="limpiarForm()"
+                            class="px-6 py-3 border border-gray-600 hover:border-gray-400">LIMPIAR</button>
+                    </div>
+                    <div class="mt-8 overflow-x-auto">
+                        <table class="w-full text-sm" id="tablaProductos">
+                            <thead>
+                                <tr class="bg-gray-900">
+                                    <th class="p-3 text-left">ID</th>
+                                    <th class="p-3 text-left">PRODUCTO</th>
+                                    <th class="p-3 text-left">PRECIO</th>
+                                    <th class="p-3 text-left">CATEGORÍA</th>
+                                    <th class="p-3 w-20">ACCIONES</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-300"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN OPERACIONES -->
+                <div id="seccion2" class="hidden">
+                    <h2 class="text-2xl mb-4">REGISTRAR OPERACIÓN</h2>
+                    <div class="industrial p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div><label class="block text-xs text-gray-400 mb-1">PRODUCTO</label><select id="productoSelect"
+                                class="w-full p-3"></select></div>
+                        <div><label class="block text-xs text-gray-400 mb-1">CANTIDAD</label><input id="cantidad"
+                                type="number" value="1" min="1" class="w-full p-3"></div>
+                        <div class="flex items-end"><button onclick="registrarOperacion()"
+                                class="w-full py-3 bg-gray-800 hover:bg-gray-700 border border-gray-500">REGISTRAR
+                                COMPRA</button></div>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8" id="resumenOperaciones"></div>
+                    <h3 class="text-lg mt-10 mb-3">HISTORIAL DE OPERACIONES</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm" id="tablaOperaciones">
+                            <thead>
+                                <tr class="bg-gray-900">
+                                    <th class="p-3 text-left">FECHA</th>
+                                    <th class="p-3 text-left">PRODUCTO</th>
+                                    <th class="p-3">CANTIDAD</th>
+                                    <th class="p-3">TOTAL</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN REVISIÓN -->
+                <div id="seccion3" class="hidden">
+                    <h2 class="text-2xl mb-6">REVISIÓN GENERAL</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="estadisticasGenerales"></div>
+
+                    <div class="mt-10 flex justify-center">
+                        <button onclick="generarPDF()"
+                            class="px-8 py-4 border border-gray-600 hover:bg-gray-900 flex items-center gap-3 text-lg">
+                            <i class="fas fa-file-pdf"></i> DESCARGAR PDF
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let productos = JSON.parse(localStorage.getItem('dragon_productos')) || [];
+        let operaciones = JSON.parse(localStorage.getItem('dragon_operaciones')) || [];
+
+        function guardarDatos() {
+            localStorage.setItem('dragon_productos', JSON.stringify(productos));
+            localStorage.setItem('dragon_operaciones', JSON.stringify(operaciones));
+        }
+
+        function calcularTotales() {
+            const totalGastado = operaciones.reduce((sum, op) => sum + op.total, 0);
+            const totalUnidades = operaciones.reduce((sum, op) => sum + op.cantidad, 0);
+            const totalOperaciones = operaciones.length;
+            return { totalGastado, totalUnidades, totalOperaciones };
+        }
+
+        function renderResumenOperaciones() {
+            const { totalGastado, totalUnidades, totalOperaciones } = calcularTotales();
+            const promedio = totalOperaciones > 0 ? (totalGastado / totalOperaciones).toFixed(2) : 0;
+            const html = `
+                <div class="stat-card p-6 rounded text-center">
+                    <p class="text-gray-400 text-sm">OPERACIONES</p>
+                    <p class="text-4xl font-bold text-gray-200">${totalOperaciones}</p>
+                </div>
+                <div class="stat-card p-6 rounded text-center">
+                    <p class="text-gray-400 text-sm">UNIDADES</p>
+                    <p class="text-4xl font-bold text-gray-200">${totalUnidades}</p>
+                </div>
+                <div class="stat-card p-6 rounded text-center">
+                    <p class="text-gray-400 text-sm">TOTAL GASTADO</p>
+                    <p class="text-4xl font-bold text-gray-200">$${totalGastado.toFixed(2)}</p>
+                </div>
+                <div class="stat-card p-6 rounded text-center">
+                    <p class="text-gray-400 text-sm">PROMEDIO</p>
+                    <p class="text-4xl font-bold text-gray-200">$${promedio}</p>
+                </div>`;
+            document.getElementById('resumenOperaciones').innerHTML = html;
+        }
+
+        function renderEstadisticasGenerales() {
+            const { totalGastado, totalUnidades, totalOperaciones } = calcularTotales();
+            const html = `
+                <div class="industrial p-8 text-center"><p class="text-6xl font-bold text-gray-200">${productos.length}</p><p class="text-gray-400">Productos registrados</p></div>
+                <div class="industrial p-8 text-center"><p class="text-6xl font-bold text-gray-200">$${totalGastado.toFixed(2)}</p><p class="text-gray-400">Total invertido</p></div>
+                <div class="industrial p-8 text-center"><p class="text-6xl font-bold text-gray-200">${totalUnidades}</p><p class="text-gray-400">Unidades compradas</p></div>`;
+            document.getElementById('estadisticasGenerales').innerHTML = html;
+        }
+
+        function renderProductos() {
+            const tbody = document.querySelector('#tablaProductos tbody');
+            tbody.innerHTML = '';
+            productos.forEach((p, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td class="p-3">${p.id}</td><td class="p-3">${p.nombre}</td><td class="p-3">$${Number(p.precio).toFixed(2)}</td><td class="p-3">${p.categoria || '-'}</td><td class="p-3 text-center"><button onclick="eliminarProducto(${index})" class="text-gray-400 hover:text-white"><i class="fas fa-trash"></i></button></td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderOperaciones() {
+            const tbody = document.querySelector('#tablaOperaciones tbody');
+            tbody.innerHTML = '';
+            operaciones.slice().reverse().forEach(op => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td class="p-3">${op.fecha}</td><td class="p-3">${op.productoNombre}</td><td class="p-3 text-center">${op.cantidad}</td><td class="p-3">$${op.total.toFixed(2)}</td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function actualizarSelect() {
+            const select = document.getElementById('productoSelect');
+            select.innerHTML = '<option value="">-- Selecciona producto --</option>';
+            productos.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                opt.textContent = `${p.nombre} ($${p.precio})`;
+                select.appendChild(opt);
+            });
+        }
+
+        function agregarProducto() {
+            const nombre = document.getElementById('nombre').value.trim();
+            const precio = parseFloat(document.getElementById('precio').value);
+            const categoria = document.getElementById('categoria').value.trim();
+            if (!nombre || isNaN(precio) || precio <= 0) return alert("❌ Nombre y precio válido son obligatorios");
+
+            productos.push({ id: Date.now(), nombre, precio, categoria: categoria || "Sin categoría" });
+            guardarDatos();
+            renderProductos();
+            actualizarSelect();
+            limpiarForm();
+            alert("✅ Producto agregado correctamente");
+        }
+
+        function eliminarProducto(index) {
+            if (confirm("¿Estás seguro de eliminar este producto?")) {
+                productos.splice(index, 1);
+                guardarDatos();
+                renderProductos();
+                actualizarSelect();
+            }
+        }
+
+        function limpiarForm() {
+            document.getElementById('nombre').value = '';
+            document.getElementById('precio').value = '';
+            document.getElementById('categoria').value = '';
+        }
+
+        function registrarOperacion() {
+            const prodId = document.getElementById('productoSelect').value;
+            const cantidad = parseInt(document.getElementById('cantidad').value);
+            if (!prodId || !cantidad || cantidad < 1) return alert("❌ Selecciona un producto y cantidad válida");
+
+            const producto = productos.find(p => p.id == prodId);
+            if (!producto) return;
+
+            const total = producto.precio * cantidad;
+            operaciones.push({
+                fecha: new Date().toLocaleString('es-CO'),
+                productoId: prodId,
+                productoNombre: producto.nombre,
+                cantidad,
+                total
+            });
+
+            guardarDatos();
+            renderOperaciones();
+            renderResumenOperaciones();
+            renderEstadisticasGenerales();
+            alert(`✅ Operación registrada: ${cantidad} × ${producto.nombre}`);
+        }
+
+        function mostrarSeccion(num) {
+            document.querySelectorAll('#seccion1, #seccion2, #seccion3').forEach(sec => sec.classList.add('hidden'));
+            document.getElementById(`seccion${num}`).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.nav-btn')[num - 1].classList.add('active');
+
+            if (num === 2) renderResumenOperaciones();
+            if (num === 3) renderEstadisticasGenerales();
+        }
+
+        // ==================== PDF CON NUEVO TÍTULO ====================
+        function generarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Nuevo título solicitado
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(22);
+            doc.text("LISTA DE PRODUCTOS", 105, 20, { align: "center" });
+
+            doc.setFontSize(11);
+            doc.text(`Generado el: ${new Date().toLocaleString('es-CO')}`, 105, 30, { align: "center" });
+
+            // Resumen
+            const { totalGastado, totalUnidades, totalOperaciones } = calcularTotales();
+            doc.setFontSize(13);
+            doc.text("RESUMEN", 20, 50);
+            doc.setFontSize(11);
+            doc.text(`Total de productos: ${productos.length}`, 20, 60);
+            doc.text(`Total de operaciones: ${totalOperaciones}`, 20, 68);
+            doc.text(`Unidades compradas: ${totalUnidades}`, 20, 76);
+            doc.text(`Valor total invertido: $${totalGastado.toFixed(2)}`, 20, 84);
+
+            // Lista detallada de productos
+            doc.setFontSize(14);
+            doc.text("DETALLE DE PRODUCTOS", 20, 100);
+
+            let y = 110;
+            doc.setFontSize(10);
+
+            productos.forEach(p => {
+                if (y > 270) {
+                    doc.addPage();
+                    y = 20;
+                }
+                doc.text(`• ${p.nombre}`, 20, y);
+                doc.text(`   Precio: $${Number(p.precio).toFixed(2)}`, 25, y + 6);
+                doc.text(`   Categoría: ${p.categoria || 'Sin categoría'}`, 25, y + 12);
+                y += 18;
+            });
+
+            doc.save(`Lista-de-Productos-${new Date().toISOString().slice(0, 10)}.pdf`);
+            alert("📄 PDF generado correctamente");
+        }
+
+        function exportarReporte() {
+            alert("Usa el botón 'DESCARGAR PDF' en la sección Revisión.");
+        }
+
+        // Inicializar
+        renderProductos();
+        renderOperaciones();
+        actualizarSelect();
+        mostrarSeccion(1);
+    </script>
+</body>
+
+</html>
